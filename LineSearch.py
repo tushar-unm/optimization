@@ -1,5 +1,6 @@
 from scipy import *
 from math import *
+import pandas as pd 
 import sys
 from Useful import *
 
@@ -78,6 +79,13 @@ def NewtonsMethodLineSearch(x_0, alpha_0, f_alpha_k, fobj, xtol):
 	x_k = x_0
 	iterations = 0
 
+
+	#initialize dimensionality and storage in terms of n (the dimensionality of the problem)
+	n = fobj.n
+	# so (len(x_k) + 2 floating values for pk + 1 floating value for alpha_k + 1 floating value for iteration count)/n; 
+	# the division by n is to present thee result in terms of dimensionality of the problem
+	storage = (len(x_k) + 2 + 1 + 1)/n
+
 	# print(out our table header
 	print('\n\nNewton\'s Method Line Search on %s' \
 		% fobj.descriptive_name())
@@ -94,13 +102,20 @@ def NewtonsMethodLineSearch(x_0, alpha_0, f_alpha_k, fobj, xtol):
 		# $x_{k+1} = x_k + \alpha_k p_k$
 		x_k = x_k + (alpha_k * p_k)
 		iterations += 1
+
+		#add the sotrage in the current interation for p_k, alpha_k and x_k
+		# p_k should also be same dimension as x_k, and alpha_k is a scalar, so 1
+		storage = storage + fobj.storage_count()
+
 		# print(out the line of the table
-		print('%d\t\t%f\t%s\t%d' \
-			% (iterations, alpha_k, x_k, fobj.eval_count()))
+		print('%d\t\t%s\t%s\t%f\t%d\t%d\t%d\t%d' \
+                    % (iterations, x_k, p_k, alpha_k, fobj.eval_count()[0], fobj.eval_count()[1], fobj.eval_count()[2], storage))
 		# make sure that this line gets written to stdout
 		sys.stdout.flush()
 
-	return x_k
+		# storing the function, gradient and hessian evalution results at each
+
+	return fobj
 
 
 def SteepestDescentLineSearch(x_0, alpha_0, f_alpha_k, fobj, xtol):
@@ -135,6 +150,12 @@ def SteepestDescentLineSearch(x_0, alpha_0, f_alpha_k, fobj, xtol):
 	x_k = x_0
 	iterations = 0
 
+	#initialize dimensionality and storage in terms of n (the dimensionality of the problem)
+	n = fobj.n
+	# so (len(x_k) + 2 floating values for pk + 1 floating value for alpha_k + 1 floating value for iteration count)/n;
+	# the division by n is to present thee result in terms of dimensionality of the problem
+	storage = (len(x_k) + 2 + 1 + 1)/n
+
 	# print(out our table header
 	print('\n\nSteepest Descent Line Search on %s' \
 		% fobj.descriptive_name())
@@ -150,13 +171,18 @@ def SteepestDescentLineSearch(x_0, alpha_0, f_alpha_k, fobj, xtol):
 		# $x_{k+1} = x_k + \alpha_k p_k$
 		x_k = x_k + (alpha_k * p_k)
 		iterations += 1
-		# print(out a line of the table
-		print('%d\t\t%f\t%s\t%d' \
-			% (iterations, alpha_k, x_k, fobj.eval_count()))
+		
+		#add the sotrage in the current interation for p_k, alpha_k and x_k
+		# p_k should also be same dimension as x_k, and alpha_k is a scalar, so 1
+		storage = storage + fobj.storage_count()
+
+		# print(out the line of the table
+		print('%d\t\t%s\t%s\t%f\t%d\t%d\t%d\t%d'
+                    % (iterations, x_k, p_k, alpha_k, fobj.eval_count()[0], fobj.eval_count()[1], fobj.eval_count()[2], storage))
 		# make sure that this line gets written to stdout
 		sys.stdout.flush()
 		
-	return x_k
+	return fobj
 
 def zoom(fobj, x_k, p_k, alpha_lo, alpha_hi, phi_0, phi_prime_0, c_1, c_2):
 	"""
@@ -334,6 +360,12 @@ def BFGSLineSearch(x_0, alpha_0, f_alpha_k, fobj, epsilon, H_0):
 
 	x_k = x_0
 	H_k = H_0
+
+	#initialize dimensionality and storage in terms of n (the dimensionality of the problem)
+	n = fobj.n
+	# so (len(x_k) + 2 floating values for pk + 1 floating value for alpha_k + 1 floating value for iteration count)/n;
+	# the division by n is to present thee result in terms of dimensionality of the problem
+	storage = (len(x_k) + 2 + 1 + 1 + 2*len(H_k))/n
 
 	# print(out our table header
 	print('\n\nBFGS Line Search on %s' \
