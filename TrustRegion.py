@@ -1,5 +1,6 @@
 from scipy import *
 from Useful import *
+import math
 
 def bisection(fobj, a, b, xtol=9.9e-13, maxiter=1000):
 	"""
@@ -250,10 +251,10 @@ def TrustRegion(x_0, Delta_Bar, Delta_0, eta, fobj, maxiter):
 		if math.sqrt(dot(fobj.grad_f(x_k), fobj.grad_f(x_k))) < 9.9e-13:
 			break
 
-	print 'tolerance met: %d, trust region boundary: %d, negative curvature: %d, maximum iterations: %d' % \
-	    (tol, bound, neg, maxed)
+	print('tolerance met: %d, trust region boundary: %d, negative curvature: %d, maximum iterations: %d' % \
+	    (tol, bound, neg, maxed))
 
-	print 'Number of function evaluations: %d' % fobj.eval_count()
+	print('Number of function evaluations: %d' % fobj.eval_count())
 
 	return x_k
 		
