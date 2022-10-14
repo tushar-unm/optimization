@@ -1,8 +1,10 @@
-from scipy import *
+from scipy import linalg
 from math import *
 import pandas as pd 
 import sys
 from Useful import *
+import numpy as np
+import code as c
 
 def BacktrackingAlpha(fobj, x_k, p_k, alpha_bar):
 	"""
@@ -32,7 +34,7 @@ def BacktrackingAlpha(fobj, x_k, p_k, alpha_bar):
 	# repeat until 
 	# $f(x_k + \alpha p_k) \leq f(x_k) + c \alpha \nabla f_k^T p_k$ 
 	while fobj.f(x_k + alpha * p_k) > fobj.f(x_k) + \
-			c * alpha * matrixmultiply(\
+			c * alpha * np.matmul(\
 		transpose(fobj.grad_f(x_k)), p_k):
 		# $\alpha \leftarrow \rho \alpha$
 		alpha = rho * alpha
@@ -92,30 +94,53 @@ def NewtonsMethodLineSearch(x_0, alpha_0, f_alpha_k, fobj, xtol):
 	print('alpha_0 = %f, x_0 = %s' % (alpha_0, x_0))
 	print('iteration\talpha_k\t\tx_k\t\t\t\tf evals')
 
+	#initialize reporting dict to capture runtime parameters
+	rep_dict = {}
+
 	# repeat loop until $\|\nabla f(x_k)\| \leq$ xtol
 	while dot(fobj.grad_f(x_k), fobj.grad_f(x_k)) > xtol:
+		print('\n begin iteration {}'.format(iterations))
+		iter_rep_dict = {}
+		iter_rep_dict['x_k'] = x_k
+		print(fobj.grad_f(x_k))
+		print(fobj.hessian_f(x_k))
 		# $p_k = -B_k^{-1}\nabla f_k = -\nabla^2 f(x_k) \nabla f_k$
-		p_k = -1.0*matrixmultiply(linalg.inv(fobj.hessian_f(x_k)), \
+		p_k = -1.0*np.matmul(linalg.inv(fobj.hessian_f(x_k)), \
 							  fobj.grad_f(x_k))
 		# apply the line search technique supplied
 		alpha_k = f_alpha_k(fobj, x_k, p_k, alpha_0)
 		# $x_{k+1} = x_k + \alpha_k p_k$
 		x_k = x_k + (alpha_k * p_k)
-		iterations += 1
 
 		#add the sotrage in the current interation for p_k, alpha_k and x_k
 		# p_k should also be same dimension as x_k, and alpha_k is a scalar, so 1
 		storage = storage + fobj.storage_count()
 
+		iter_rep_dict['alpha_k'] = alpha_k
+		iter_rep_dict['f_x_k'] = fobj.f(x_k)
+		iter_rep_dict['grad_f_x_k'] = fobj.grad_f(x_k)
+		iter_rep_dict['storage'] = storage
+		iter_rep_dict['f_eval'] = fobj.eval_count()[0]
+		iter_rep_dict['grad_f_eval'] = fobj.eval_count()[1]
+		iter_rep_dict['hessian_f_eval'] = fobj.eval_count()[2]
+		rep_dict[iterations] = iter_rep_dict
+
 		# print(out the line of the table
-		print('%d\t\t%s\t%s\t%f\t%d\t%d\t%d\t%d' \
-                    % (iterations, x_k, p_k, alpha_k, fobj.eval_count()[0], fobj.eval_count()[1], fobj.eval_count()[2], storage))
+		# print('%d\t\t%s\t%s\t%f\t%d\t%d\t%d\t%d' \
+        #             % (iterations, x_k, p_k, alpha_k, fobj.eval_count()[0], fobj.eval_count()[1], fobj.eval_count()[2], storage))
+		for k, v in iter_rep_dict.items():
+			print('{}: {}'.format(k, v))
+		print('\n end iteration {} \n************\n**************\n'.format(iterations))
+
 		# make sure that this line gets written to stdout
 		sys.stdout.flush()
 
+		iterations += 1
+		
+
 		# storing the function, gradient and hessian evalution results at each
 
-	return fobj
+	return rep_dict
 
 
 def SteepestDescentLineSearch(x_0, alpha_0, f_alpha_k, fobj, xtol):
@@ -162,27 +187,48 @@ def SteepestDescentLineSearch(x_0, alpha_0, f_alpha_k, fobj, xtol):
 	print('alpha_0 = %f, x_0 = %s' % (alpha_0, x_0))
 	print('iteration\talpha_k\t\tx_k\t\t\t\tf evals')
 
+	#initialize reporting dict to capture runtime parameters
+	rep_dict = {}
+
 	# repeat loop until $\|\nabla f(x_k)\| \leq$ xtol
 	while dot(fobj.grad_f(x_k), fobj.grad_f(x_k)) > xtol:
+		print('\n begin iteration {}'.format(iterations))
+		iter_rep_dict = {}
+		iter_rep_dict['x_k'] = x_k
+
 		# $p_k = -B_k^{-1}\nabla f_k = -\nabla f_k$
 		p_k = -1.0 * fobj.grad_f(x_k)
 		# apply the line search technique supplied
 		alpha_k = f_alpha_k(fobj, x_k, p_k, alpha_0)
 		# $x_{k+1} = x_k + \alpha_k p_k$
 		x_k = x_k + (alpha_k * p_k)
-		iterations += 1
 		
 		#add the sotrage in the current interation for p_k, alpha_k and x_k
 		# p_k should also be same dimension as x_k, and alpha_k is a scalar, so 1
 		storage = storage + fobj.storage_count()
 
+		iter_rep_dict['alpha_k'] = alpha_k
+		iter_rep_dict['f_x_k'] = fobj.f(x_k)
+		iter_rep_dict['grad_f_x_k'] = fobj.grad_f(x_k)
+		iter_rep_dict['storage'] = storage
+		iter_rep_dict['f_eval'] = fobj.eval_count()[0]
+		iter_rep_dict['grad_f_eval'] = fobj.eval_count()[1]
+		iter_rep_dict['hessian_f_eval'] = fobj.eval_count()[2]
+		rep_dict[iterations] = iter_rep_dict
+
 		# print(out the line of the table
-		print('%d\t\t%s\t%s\t%f\t%d\t%d\t%d\t%d'
-                    % (iterations, x_k, p_k, alpha_k, fobj.eval_count()[0], fobj.eval_count()[1], fobj.eval_count()[2], storage))
+		# print('%d\t\t%s\t%s\t%f\t%d\t%d\t%d\t%d'
+        #             % (iterations, x_k, p_k, alpha_k, fobj.eval_count()[0], fobj.eval_count()[1], fobj.eval_count()[2], storage))
 		# make sure that this line gets written to stdout
+		#
+		for k, v in iter_rep_dict.items():
+			print('{}: {}'.format(k, v))
+		print('\n end iteration {} \n************\n**************\n'.format(iterations))
+
+		iterations += 1
 		sys.stdout.flush()
 		
-	return fobj
+	return rep_dict
 
 def zoom(fobj, x_k, p_k, alpha_lo, alpha_hi, phi_0, phi_prime_0, c_1, c_2):
 	"""
@@ -365,18 +411,24 @@ def BFGSLineSearch(x_0, alpha_0, f_alpha_k, fobj, epsilon, H_0):
 	n = fobj.n
 	# so (len(x_k) + 2 floating values for pk + 1 floating value for alpha_k + 1 floating value for iteration count)/n;
 	# the division by n is to present thee result in terms of dimensionality of the problem
-	storage = (len(x_k) + 2 + 1 + 1 + 2*len(H_k))/n
+	storage = (len(x_k) + 2 + 1 + 1 + n*len(H_k))/n
 
 	# print(out our table header
 	print('\n\nBFGS Line Search on %s' \
 		% fobj.descriptive_name())
 	print('alpha_0 = %f, x_0 = %s' % (alpha_0, x_0))
-	print('iteration\talpha_k\t\tx_k\t\t\t\tf_evals\tyk*sk positive?')
+	#print('iterations\talpha_k\t\tx_k\t\t\t\tf_evals\tyk*sk positive?')
+
+	#initialize reporting dict to capture runtime parameters
+	rep_dict = {}
 
 	# while $\|\nabla f_k\|$
 	while sqrt(dot(fobj.grad_f(x_k), fobj.grad_f(x_k))) > epsilon:
+		print('\n begin iteration {}'.format(k))
+		iter_rep_dict = {}
+		iter_rep_dict['x_k'] = x_k
 		# $p_k = -H_k \nabla f_k$
-		p_k = -1.0 * matrixmultiply(H_k, fobj.grad_f(x_k))
+		p_k = -1.0 * np.matmul(H_k, fobj.grad_f(x_k))
 		# apply the line search technique supplied
 		alpha_k = f_alpha_k(fobj, x_k, p_k, alpha_0)
 		# $x_{k+1} = x_k + \alpha p_k$
@@ -388,13 +440,13 @@ def BFGSLineSearch(x_0, alpha_0, f_alpha_k, fobj, epsilon, H_0):
 		# $\rho_k = (y_k^T s_k)^{-1}$
 		rho_k = 1.0 / dot(y_k, s_k)
 		# $H_{k+1} = (I - \rho_k s_k y_k^T)H_k(I - \rho_ky_ks_k^T) + p_ks_ks_k^T$
-		H_k_plus_1 = matrixmultiply(\
-			matrixmultiply(identity(x_0.shape[0]) - \
-				rho_k*matrixmultiply(\
+		H_k_plus_1 = np.matmul(\
+			np.matmul(identity(x_0.shape[0]) - \
+				rho_k*np.matmul(\
 				s_k, transpose(y_k)), H_k),\
 			identity(x_0.shape[0]) \
-			 - rho_k*matrixmultiply(y_k, transpose(s_k))) \
-			+ matrixmultiply(matrixmultiply(p_k, s_k), \
+			 - rho_k*np.matmul(y_k, transpose(s_k))) \
+			+ np.matmul(np.matmul(p_k, s_k), \
 					transpose(s_k))
 		# $k \leftarrow k+1$
 		k = k + 1
@@ -407,14 +459,31 @@ def BFGSLineSearch(x_0, alpha_0, f_alpha_k, fobj, epsilon, H_0):
 			y_k_s_k_positive = 'yes'
 		else:
 			y_k_s_k_positive = 'no'
+		
+		#add the sotrage in the current interation for p_k, alpha_k and x_k
+		# p_k should also be same dimension as x_k, and alpha_k is a scalar, so 1
+		storage = storage + fobj.storage_count()
 
-		# print(out a line of the table
-		print('%d\t\t%f\t%s\t%d\t%s' \
-			% (k, alpha_k, x_k, fobj.eval_count(), y_k_s_k_positive))
+		iter_rep_dict['alpha_k'] = alpha_k
+		iter_rep_dict['f_x_k'] = fobj.f(x_k)
+		iter_rep_dict['grad_f_x_k'] = fobj.grad_f(x_k)
+		iter_rep_dict['storage'] = storage
+		iter_rep_dict['f_eval'] = fobj.eval_count()[0]
+		iter_rep_dict['grad_f_eval'] = fobj.eval_count()[1]
+		iter_rep_dict['hessian_f_eval'] = fobj.eval_count()[2]
+		rep_dict[k-1] = iter_rep_dict
+
+		for k, v in iter_rep_dict.items():
+			print('{}: {}'.format(k, v))
+		print('\n end iteration {} \n************\n**************\n'.format(k))
+
+		# print(out the line of the table
+		# print('%d\t\t%s\t%s\t%f\t%d\t%d\t%d\t%d'
+        #             % (k, x_k, p_k, alpha_k, fobj.eval_count()[0], fobj.eval_count()[1], fobj.eval_count()[2], storage, y_k_s_k_positive))
 		
 		sys.stdout.flush()
 	
-	return x_k
+	return rep_dict
 
 #####################
 # unit testing code #
