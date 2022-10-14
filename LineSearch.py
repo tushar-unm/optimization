@@ -440,15 +440,25 @@ def BFGSLineSearch(x_0, alpha_0, f_alpha_k, fobj, epsilon, H_0):
 		# $\rho_k = (y_k^T s_k)^{-1}$
 		rho_k = 1.0 / dot(y_k, s_k)
 		# $H_{k+1} = (I - \rho_k s_k y_k^T)H_k(I - \rho_ky_ks_k^T) + p_ks_ks_k^T$
+		
+		# H_k_plus_1 = np.matmul(\
+		# 	np.matmul(identity(x_0.shape[0]) - \
+		# 		rho_k*np.matmul(\
+		# 		s_k, transpose(y_k)), H_k),\
+		# 	identity(x_0.shape[0]) \
+		# 	 - rho_k*np.matmul(y_k, transpose(s_k))) \
+		# 	+ np.matmul(np.matmul(p_k, transpose(s_k)), \
+		# 			s_k)
 		H_k_plus_1 = np.matmul(\
 			np.matmul(identity(x_0.shape[0]) - \
 				rho_k*np.matmul(\
 				s_k, transpose(y_k)), H_k),\
 			identity(x_0.shape[0]) \
 			 - rho_k*np.matmul(y_k, transpose(s_k))) \
-			+ np.matmul(np.matmul(p_k, s_k), \
-					transpose(s_k))
+			+ rho_k*np.matmul(s_k, transpose(s_k))
+
 		# $k \leftarrow k+1$
+		#c.interact(local=locals(), banner='inspecting bfgs')
 		k = k + 1
 		# advance the values
 		x_k = x_k_plus_1
@@ -473,8 +483,8 @@ def BFGSLineSearch(x_0, alpha_0, f_alpha_k, fobj, epsilon, H_0):
 		iter_rep_dict['hessian_f_eval'] = fobj.eval_count()[2]
 		rep_dict[k-1] = iter_rep_dict
 
-		for k, v in iter_rep_dict.items():
-			print('{}: {}'.format(k, v))
+		for ky, v in iter_rep_dict.items():
+			print('{}: {}'.format(ky, v))
 		print('\n end iteration {} \n************\n**************\n'.format(k))
 
 		# print(out the line of the table
