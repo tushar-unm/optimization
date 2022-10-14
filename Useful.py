@@ -52,5 +52,5 @@ def ConstructReportingDf(rep_dict, x_star, report_name=None, save=False):
 	
 	rep_df = pd.DataFrame(rep_ar, columns=header)
 	if save:
-		rep_df.to_csv('report_{}.csv'.format(report_name))
+		rep_df.to_csv('output/report_{}.csv'.format(report_name))
 	return rep_df
