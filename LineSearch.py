@@ -423,7 +423,7 @@ def BFGSLineSearch(x_0, alpha_0, f_alpha_k, fobj, epsilon, H_0):
 	rep_dict = {}
 
 	# while $\|\nabla f_k\|$
-	while sqrt(dot(fobj.grad_f(x_k), fobj.grad_f(x_k))) > epsilon:
+	while dot(fobj.grad_f(x_k), fobj.grad_f(x_k)) > epsilon:
 		print('\n begin iteration {}'.format(k))
 		iter_rep_dict = {}
 		iter_rep_dict['x_k'] = x_k
